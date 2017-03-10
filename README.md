@@ -44,8 +44,10 @@ python dump.py -p `<PATH>`
 
 ## Q&A
 
-1. How do I get a set of credentials to get the data dump?
-A. TBD
++ How do I get a set of credentials to get the data dump?
 
-2. How long does the sync process takes?
-A. That will depend on you hardware configuration and the bandwidth you have, however, the process could be faster by increasing the (number of concurrent elements)[http://docs.aws.amazon.com/cli/latest/topic/s3-config.html] we sync at the same time
+TBD
+
++ How long does the sync process takes?
+
+That will depend on you hardware configuration and the bandwidth you have, however, the process could be faster by increasing the (number of concurrent elements)[http://docs.aws.amazon.com/cli/latest/topic/s3-config.html] we sync at the same time
