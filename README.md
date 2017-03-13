@@ -2,9 +2,9 @@
 
 The public data dump contains a snapshot of all public data in the ORCID Registry associated with an ORCID record that was created or claimed by an individual.
 
-This is a Python script, based on the Amazon AWS CLI libraries; it is just a reference implementation intended to show ORCID members how to access the data dump on demand allowing them to be up to date with the latest public data in the ORCID registry.
+This is a Python script, based on the Amazon AWS CLI API; it is just a reference implementation intended to show ORCID members how to access the data dump on demand allowing them to be up to date with the latest public data in the ORCID registry.
 
-Members could create their own implementation using the different libraries that Amazon provides to access S3: 
+Members could create their own implementation using the different API that Amazon provides to access S3: 
 
 | CLI | http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html |
 | REST API | http://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html |
