@@ -16,7 +16,7 @@ logger.addHandler(fileHandler)
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--path', help='Path to place the public data files', required=True)
 parser.add_argument('-f', '--format', help='Data format', required=False, choices=['xml','json'], default='xml')
-parser.add_argument('-v', '--version', help='ORCID message version', required=False, choices=['1.2','2.0'], default='1.2')
+parser.add_argument('-v', '--version', help='ORCID message version', required=False, choices=['1.2','2.0'], default='2.0')
 args = parser.parse_args()
 
 format = args.format

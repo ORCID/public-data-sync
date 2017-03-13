@@ -2,7 +2,17 @@
 
 The public data dump contains a snapshot of all public data in the ORCID Registry associated with an ORCID record that was created or claimed by an individual.
 
-This script is intended to allow ORCID members to access the data dump on demand, allowing them to be up to date with the latest public data in the ORCID registry.
+This is a Python script, based on the Amazon AWS CLI API; it is just a reference implementation intended to show ORCID members how to access the data dump on demand allowing them to be up to date with the latest public data in the ORCID registry.
+
+Members could create their own implementation using the different API that Amazon provides to access S3: 
+
+| API | URL |
+| --- | --- |
+| CLI | http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html |
+| REST API | http://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html |
+| Python SDK | https://aws.amazon.com/es/developers/getting-started/python/ |
+| Java SDK: | https://aws.amazon.com/es/developers/getting-started/java/ |
+| Others: | https://aws.amazon.com/es/developers/getting-started/ |
 
 ## Technical description
 
@@ -36,7 +46,7 @@ To start the sync process, you should provide the following params:
    * p: Local path where you want to place the ORCID data dump
 * Optional:
    * f: The public data dump is provided in two different formats XML and JSON, the default one is XML
-   * v: The public data dump is provided in the two main API versions, 1.2 and 2.0, the default one is 1.2
+   * v: The public data dump is provided in the two main API versions, 1.2 and 2.0, the default one is 2.0
    
 So, to start the sync process, you should start the script providing at least the path parameter, as follows:   
 
