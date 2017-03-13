@@ -6,6 +6,8 @@ This is a Python script, based on the Amazon AWS CLI API; it is just a reference
 
 Members could create their own implementation using the different API that Amazon provides to access S3: 
 
+| API | URL |
+| --- | --- |
 | CLI | http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html |
 | REST API | http://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html |
 | Python SDK | https://aws.amazon.com/es/developers/getting-started/python/ |
