@@ -2,6 +2,7 @@
 import logging
 import os
 import subprocess
+import sys
 
 # Configure AWS credentials before continue
 # http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files
