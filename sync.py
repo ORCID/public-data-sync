@@ -7,7 +7,7 @@ import sys
 # Configure AWS credentials before continue
 # http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files
 
-logger = logging.getLogger('dump')
+logger = logging.getLogger('sync')
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 fileHandler = logging.FileHandler('log.log', mode='w')
 fileHandler.setFormatter(formatter)
