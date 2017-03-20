@@ -8,6 +8,11 @@ import sys
 from Queue import Queue
 from threading import Thread
 
+# Configure AWS credentials before continue
+# http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files
+
+# This script will sync your local path with the records that have been modified since the last 60 minutes
+
 logger = logging.getLogger('sync_modified')
 formatter = logging.Formatter('%(asctime)s %(message)s')
 fileHandler = logging.FileHandler('sync_modified.log', mode='w')
