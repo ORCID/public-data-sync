@@ -8,9 +8,9 @@ import sys
 from Queue import Queue
 from threading import Thread
 
-logger = logging.getLogger('list_modified')
+logger = logging.getLogger('sync_modified')
 formatter = logging.Formatter('%(asctime)s %(message)s')
-fileHandler = logging.FileHandler('list_modified.log', mode='w')
+fileHandler = logging.FileHandler('sync_modified.log', mode='w')
 fileHandler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
