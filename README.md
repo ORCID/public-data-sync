@@ -62,11 +62,11 @@ python sync_modified.py -p `<PATH>`
 
 + How do I get a set of credentials to use the data sync?
 
-Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org). In the message state you are requesting a set of Amazon AWS credentials to access the ORCID public record script. The ORCID team will confirm your access to the script and provide instructions for accessing the credentials via Passpack (the same method used when issuing ORCID API credentials).
+Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org). In the message state you are requesting a set of Amazon AWS credentials to access the ORCID public data sync script. The ORCID team will confirm your access to the script and provide instructions for accessing the credentials via Passpack (the same method used when issuing ORCID API credentials).
 
 + Who can use the data sync process?
 
-The data sync process is currently being beta-tested. More information will be provided when the test period is complete.
+The data sync process is available to ORCID Premium members. If you are unsure of your organization's membership status contact [support@orcid.org](mailto:support@orcid.org) 
 
 + How long does the data sync process takes?
 
