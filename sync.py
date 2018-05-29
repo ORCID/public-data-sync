@@ -103,7 +103,7 @@ if __name__ == "__main__":
 		suffix = orcid_to_sync[-3:]
 		if download_summaries:
 			prefix = '/' + suffix + '/' + orcid_to_sync + '.xml'
-			subprocess.call('aws s3 cp ' + summaries_bucket + prefix + ' ' + path + 'summaries/' + suffix, shell=True)
+			subprocess.call('aws s3 cp ' + summaries_bucket + prefix + ' ' + path + 'summaries/' + prefix, shell=True)
 		if download_activities:
 			prefix = '/' + suffix + '/' + orcid_to_sync + '/'
 			subprocess.call('aws s3 cp ' + activities_bucket + prefix + ' ' + path + 'activities/' + prefix + ' --recursive', shell=True)
