@@ -9,15 +9,15 @@ import CustomLogHandler
 # Configure AWS credentials before continue
 # http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files
 
-logger = logging.getLogger('sync')
+logger = logging.getLogger('download')
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 fileHandler = CustomLogHandler.CustomLogHandler('download.log')
 fileHandler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
-summaries_bucket = 's3://v2.0-summaries-qa'
-activities_bucket = 's3://v2.0-activities-qa'
+summaries_bucket = 's3://v2.0-summaries'
+activities_bucket = 's3://v2.0-activities'
 
 now = datetime.now()
 month = str(now.month)
