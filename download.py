@@ -31,6 +31,7 @@ parser.add_argument('-t', '--tar', help='Compress the dump', action='store_true'
 args = parser.parse_args()
 
 path = args.path if args.path.endswith('/') else (args.path + '/')
+path = path + 'ORCID_public_data_files/'
 download_summaries = args.summaries
 download_activities = args.activities
 tar_dump = args.tar
@@ -112,5 +113,5 @@ if __name__ == "__main__":
 	logger.info('Download process is done')	
 	
 	file = open('last_ran.config','w') 
-	file.write(datetime.today())  
+	file.write(str(datetime.now()))  
 	file.close()
