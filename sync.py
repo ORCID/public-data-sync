@@ -9,7 +9,7 @@ import CustomLogHandler
 
 logger = logging.getLogger('sync')
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-fileHandler = CustomLogHandler.CustomLogHandler('download.log')
+fileHandler = CustomLogHandler.CustomLogHandler('sync.log')
 fileHandler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
@@ -53,10 +53,10 @@ tar_dump = args.tar
 if __name__ == "__main__":
 	logger.info('Downloading the lambda file')
 	# Download the lambda file
-	subprocess.call('aws s3 cp s3://orcid-lambda-file/last_modified.csv.tar last_modified.csv.tar', shell=True)
+	# subprocess.call('aws s3 cp s3://orcid-lambda-file/last_modified.csv.tar last_modified.csv.tar', shell=True)
 	logger.info('Decompressing the lambda file')
 	# Decompress the file
-	subprocess.call('tar -xzvf last_modified.csv.tar', shell=True)
+	# subprocess.call('tar -xzvf last_modified.csv.tar', shell=True)
 
 	# Look for the config file
 	last_sync = None
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 			subprocess.call('aws s3 cp ' + summaries_bucket + prefix + ' ' + path + 'summaries/' + suffix, shell=True)
 		if download_activities:
 			prefix = '/' + suffix + '/' + orcid_to_sync + '/'
-			subprocess.call('aws s3 cp ' + activities_bucket + prefix + ' ' + path + 'activities/' + prefix, shell=True)
+			subprocess.call('aws s3 cp ' + activities_bucket + prefix + ' ' + path + 'activities/' + prefix + ' --recursive', shell=True)
 			
 			
 			
