@@ -53,6 +53,8 @@ tar_dump = args.tar
 # Main process
 #---------------------------------------------------------
 if __name__ == "__main__":
+	start_time = datetime.now()
+
 	# Download the lambda file
 	logger.info('Downloading the lambda file')	
 	subprocess.call('aws s3 cp s3://orcid-lambda-file/last_modified.csv.tar last_modified.csv.tar', shell=True)
@@ -63,12 +65,12 @@ if __name__ == "__main__":
 
 	# Look for the config file
 	last_sync = None
-	if os.path.isfile('last_ran.config'):
+	if days_to_sync is not None: 
+		last_sync = (datetime.now() - timedelta(days=days_to_sync))
+	elif os.path.isfile('last_ran.config'):
 		f = open('last_ran.config', 'r')
 		date_string = f.readline()		
-		last_sync = datetime.strptime(date_string, date_format)		
-	elif days_to_sync is not None: 
-		last_sync = (datetime.now() - timedelta(days=days_to_sync))
+		last_sync = datetime.strptime(date_string, date_format)	
 	else:
 		last_sync = (datetime.now() - timedelta(days=30))
 		
@@ -128,5 +130,10 @@ if __name__ == "__main__":
 				if not os.listdir(path + 'activities/' + suffix):
 					logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
 					shutil.rmtree(path + 'activities/' + suffix)
+
+	# keep track of the last time this process ran
+	file = open('last_ran.config','w') 
+	file.write(str(start_time))  
+	file.close()
 			
 						

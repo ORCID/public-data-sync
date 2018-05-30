@@ -1,6 +1,6 @@
 ﻿## ORCID public data sync
 
-The public data sync contains a snapshot of all public data in the ORCID Registry associated with any ORCID record that was created or claimed by an individual. The public data modified sync is a snapshot of all public data on records which have been modified in the last hour.
+The public data sync contains a snapshot of all public data in the ORCID Registry associated with any ORCID record that was created or claimed by an individual. 
 
 These are Python scripts, based on the Amazon AWS CLI API; it is just a reference implementation intended to show ORCID members how to access the public data sync on demand allowing them to be up to date with the latest public data in the ORCID registry.
 
@@ -16,11 +16,9 @@ Members can create their own implementation using the different APIs that Amazon
 
 ## Technical description
 
-These scripts will synchronize a given folder with the latest content available in the [Amazon S3](https://aws.amazon.com/s3) ORCID data sync repository. The sync.py script will sync all public content available, the sync_modified.py script will sync only public content from records modified in the last hour.
+These scripts will synchronize a given folder with the latest content available in the [Amazon S3](https://aws.amazon.com/s3) ORCID data sync repository. The download.py script will fetch all public content available, the sync.py script will sync the content modified since the last time the download.py or the sync.py script ran, since a given number of days back, or since the last 30 days if none of the options is provided.
 
 When the synchronization process starts, the script will create a set of folders that will contain all ORCID records distributed by the [checksum](http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier) of the ORCID ID.
-
-The first time these script run, all records will be copied over your local path, however, any subsequent executing of the scripts will synchronize the existing data and fetch only the records that have been modified or the ones that has been created since the last time.
 
 ## Quick setup
 
@@ -41,22 +39,62 @@ The first time these script run, all records will be copied over your local path
   * Default output format: XML
   * For more information see [Configure Amazon AWS credentials](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-using-examples)
 
-6. If you are runing sync.py, verify you have at least 250GB available in your hard drive to store the ORCID public data sync
+6. Verify you have at least 250GB available in your hard drive to store the ORCID public data sync
  
-## Running the script
+## Running the script download.py script
+
+Objective: This script will fetch all public content available at the time it ran
 
 Script params: 
 
 * Required:
    * p: Local path where you want to place the ORCID data dump
 * Optional:
-   * f: Format, the records are provided in two different formats, XML and JSON, the default one is XML
-   * v: Version, the records are provided in the two supported API versions, 1.2 and 2.0, the default one is 2.0
-   
-Start the sync process providing at least the path parameter, as follows:   
+   * s: Use it to sync summaries
+   * a: Use it to sync activities
+   * t: Use it to create a compressed directory (.tar.gz) for each of the types (activities or summaries) you are syncing 
 
-python sync.py -p `<PATH>`
-python sync_modified.py -p `<PATH>`
+Start the sync process providing at least the path parameter and -s or -a
+   
+Examples:    
+
+python download.py -p `<PATH>` -s
+
+This will sync all summaries and put them under the `<PATH>` directory inside a folder called `summaries`
+
+python download.py -p `<PATH>` -s -a
+
+This will sync all activities and summaries and put them under the `<PATH>` directory, the summaries will be inside a folder called `summaries` and the activities will be inside a folder called `activites`
+
+After this process finishes, there will be a config file called `last_ran.config`, which will contain the time this process started.
+
+## Running the script sync.py script
+
+Objective: This script will fetch the public content available at the time it ran and that was modified after a given time
+
+Script params: 
+
+* Required:
+   * p: Local path where you want to place the ORCID data dump
+* Optional:
+   * s: Use it to sync summaries
+   * a: Use it to sync activities
+   * t: Use it to create a compressed directory (.tar.gz) for each of the types (activities or summaries) you are syncing 
+   * d: Use it to indicate the number of days in the past the record will sync, it is not required and if missing, the system will use the `last_ran.config` file to determine which files it have to sync
+
+Start the sync process providing at least the path parameter and -s or -a
+   
+Examples:    
+
+python sync.py -p `<PATH>` -s
+
+This will sync summaries and put them under the `<PATH>` directory inside a folder called `summaries`
+
+python sync.py -p `<PATH>` -s -a
+
+This will sync activities and summaries and put them under the `<PATH>` directory, the summaries will be inside a folder called `summaries` and the activities will be inside a folder called `activites`
+
+After this process finishes, there will be a config file called `last_ran.config`, which will contain the time this process started.
 
 ## Q&A
 

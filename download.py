@@ -95,7 +95,9 @@ if __name__ == "__main__":
 	# Create the path directory
 	if not os.path.exists(path):
 		os.makedirs(path)
-		
+	
+	start_time = datetime.now()
+	
 	logger.info('About to start syncing local folder with s3 buckets')	
 
 	# Define threads
@@ -112,6 +114,7 @@ if __name__ == "__main__":
 	
 	logger.info('Download process is done')	
 	
+	# keep track of the last time this process ran
 	file = open('last_ran.config','w') 
-	file.write(str(datetime.now()))  
+	file.write(str(start_time))  
 	file.close()
