@@ -1,11 +1,13 @@
 import argparse
 import logging
+import os
 import os.path
 import subprocess
 from multiprocessing import Process
 from datetime import datetime
 from datetime import timedelta
 import CustomLogHandler
+import shutil
 
 logger = logging.getLogger('sync')
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -14,8 +16,8 @@ fileHandler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
-summaries_bucket = 's3://v2.0-summaries'
-activities_bucket = 's3://v2.0-activities'
+summaries_bucket = 's3://v2.0-summaries/'
+activities_bucket = 's3://v2.0-activities/'
 
 date_format = '%Y-%m-%d %H:%M:%S.%f'
 date_format_no_millis = '%Y-%m-%d %H:%M:%S'
@@ -51,12 +53,13 @@ tar_dump = args.tar
 # Main process
 #---------------------------------------------------------
 if __name__ == "__main__":
-	logger.info('Downloading the lambda file')
 	# Download the lambda file
-	# subprocess.call('aws s3 cp s3://orcid-lambda-file/last_modified.csv.tar last_modified.csv.tar', shell=True)
-	logger.info('Decompressing the lambda file')
+	logger.info('Downloading the lambda file')	
+	subprocess.call('aws s3 cp s3://orcid-lambda-file/last_modified.csv.tar last_modified.csv.tar', shell=True)
+	
 	# Decompress the file
-	# subprocess.call('tar -xzvf last_modified.csv.tar', shell=True)
+	logger.info('Decompressing the lambda file')	
+	subprocess.call('tar -xzvf last_modified.csv.tar', shell=True)
 
 	# Look for the config file
 	last_sync = None
@@ -69,7 +72,7 @@ if __name__ == "__main__":
 	else:
 		last_sync = (datetime.now() - timedelta(days=30))
 		
-	logger.info('Sync records modified after %s' + str(last_sync))
+	logger.info('Sync records modified after %s', str(last_sync))
 		
 	records_to_sync = []
 
@@ -102,14 +105,28 @@ if __name__ == "__main__":
 	for orcid_to_sync in records_to_sync:
 		suffix = orcid_to_sync[-3:]
 		if download_summaries:
-			prefix = '/' + suffix + '/' + orcid_to_sync + '.xml'
+			prefix = suffix + '/' + orcid_to_sync + '.xml'
 			subprocess.call('aws s3 cp ' + summaries_bucket + prefix + ' ' + path + 'summaries/' + prefix, shell=True)
 		if download_activities:
-			prefix = '/' + suffix + '/' + orcid_to_sync + '/'
-			subprocess.call('aws s3 cp ' + activities_bucket + prefix + ' ' + path + 'activities/' + prefix + ' --recursive', shell=True)
+			prefix = suffix + '/' + orcid_to_sync + '/'
+			local_directory = path + 'activities/' + prefix			
+			# fetch data from S3
+			logger.info('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete')
+			subprocess.call('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete', shell=True)
+			# aws cli will remove the files but not the folders so, 
+			# we need to check if the folders are empty and delete it
+			if os.path.exists(local_directory) and os.path.isdir(local_directory): 
+				for root, dirs, files in os.walk(local_directory):
+					for dir in dirs:
+						if not os.listdir(local_directory + '/' + dir):				
+							logger.info('Deleting %s because it is empty', local_directory + '/' + dir)
+							shutil.rmtree(local_directory + '/' + dir)
+				if not os.listdir(local_directory):
+					logger.info('Deleting %s because because it is empty', local_directory)
+					shutil.rmtree(local_directory)
+				# delete the suffix folder if needed
+				if not os.listdir(path + 'activities/' + suffix):
+					logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
+					shutil.rmtree(path + 'activities/' + suffix)
 			
-			
-			
-			
-			
-			
+						
