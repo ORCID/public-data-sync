@@ -42,7 +42,7 @@ download_summaries = args.summaries
 download_activities = args.activities
 recovery = args.recovery
 tar_dump = args.tar
-verbose  = arg.verbose
+verbose  = args.verbose
 MAX_THREADS = int(args.max_threads)
 
 # Create a client
