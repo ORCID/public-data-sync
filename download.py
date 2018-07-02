@@ -62,7 +62,7 @@ def download_summary(element):
 	name = components[1]
 	
 	if verbose:
-		Print(name)
+		print (name)
 
 	file_path = path + 'summaries/' + checksum + '/'
 	logger.info('Downloading ' + name + ' to ' + file_path)
