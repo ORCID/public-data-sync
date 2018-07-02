@@ -33,6 +33,7 @@ parser.add_argument('-a', '--activities', help='Download activities', action='st
 parser.add_argument('-t', '--tar', help='Compress the dump', action='store_true')
 parser.add_argument('-r', '--recovery', help='Start recovery process', action='store_true')
 parser.add_argument('-max', '--max_threads', default=60)
+parser.add_argument('-v', '--verbose', help='Print the name of the downloading files.', action='store_true')
 args = parser.parse_args()
 
 path = args.path if args.path.endswith('/') else (args.path + '/')
@@ -41,6 +42,7 @@ download_summaries = args.summaries
 download_activities = args.activities
 recovery = args.recovery
 tar_dump = args.tar
+verbose  = args.verbose
 MAX_THREADS = int(args.max_threads)
 
 # Create a client
@@ -59,6 +61,9 @@ def download_summary(element):
 	# File name 
 	name = components[1]
 	
+	if verbose:
+		print (name)
+
 	file_path = path + 'summaries/' + checksum + '/'
 	logger.info('Downloading ' + name + ' to ' + file_path)
 	
