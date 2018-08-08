@@ -22,24 +22,24 @@ When the synchronization process starts, the script will create a set of folders
 
 ## Quick setup
 
-1. Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org) requesting a set of [Amazon AWS](https://aws.amazon.com) credentials to access the ORCID public record script.
+1. Ensure that you are set up to handle the sync files. Verify you have at least 250GB available in your hard drive and are able to process the files (each ORCID records is stored as multiple files). You may want to first look at the [ORCID Public Data File](https://orcid.org/content/download-file) to see an example of what to expect when using the sycn process.
 
-2. Install [python 2.7.6+](https://www.python.org/download/releases/2.7/)
+2. Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org) requesting a set of [Amazon AWS](https://aws.amazon.com) credentials to access the ORCID public record script.
 
-3. Install the [python PIP](https://pip.pypa.io/en/stable/installing/) module
+3. Install [python 2.7.6+](https://www.python.org/download/releases/2.7/)
 
-4. Install script dependencies:
+4. Install the [python PIP](https://pip.pypa.io/en/stable/installing/) module
+
+5. Install script dependencies:
   * pip2 install -r public-data-sync/requirements.txt
 
-5. Configure your [Amazon AWS credentials](https://aws.amazon.com):
+6. Configure your [Amazon AWS credentials](https://aws.amazon.com):
 
   * AWS Access Key ID: Provided by ORCID
   * AWS Secret Access Key: Provided by ORCID
   * Default region name: Your region, see [Specifying AWS Regions](http://docs.aws.amazon.com/powershell/latest/userguide/pstools-installing-specifying-region.html) for more information
   * Default output format: XML
   * For more information see [Configure Amazon AWS credentials](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-using-examples)
-
-6. Verify you have at least 250GB available in your hard drive to store the ORCID public data sync
  
 ## Running the script download.py script
 
@@ -104,8 +104,18 @@ Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org). In the 
 
 + Who can use the data sync process?
 
-The data sync process is available to ORCID Premium members. If you are unsure of your organization's membership status contact [support@orcid.org](mailto:support@orcid.org) 
+The data sync process is available to ORCID Premium members. If you are unsure of your organization's membership status contact [support@orcid.org](mailto:support@orcid.org). Everyone is welcome to use the free [ORCID Public Data File](https://orcid.org/content/download-file).
 
 + How long does the data sync process takes?
 
 That will depend on you hardware configuration and the bandwidth you have, however, the process could be faster by increasing the [number of concurrent elements](http://docs.aws.amazon.com/cli/latest/topic/s3-config.html) synced at the same time.
+
++ Can I get sync files in other formats?
+
+We only offer the sycn files in ORCID XML using the [2.0 schema](https://github.com/ORCID/ORCID-Source/tree/master/orcid-model/src/main/resources/record_2.0). If you are working with JSON, you may want to consider using the [ORCID Converstion Utility](https://github.com/ORCID/orcid-conversion-lib)
+
++ Are there other options for tracking changes to ORCID records?
+
+   * Premium members can [set up webhooks](https://github.com/ORCID/ORCID-Source/blob/master/orcid-api-web/tutorial/webhooks.md) to get notifications when specific records they are watching are updated.
+   * A [Lambda file](http://74804fb637bd8e2fba5b-e0a029c2f87486cddec3b416996a6057.r3.cf1.rackcdn.com/last_modified.csv.tar) is available listing the last time each ORCID record was modified, modified records can then be called using the API to see what changes were made.
+   * Depending on your use case, you may be able to query the [ORCID API](https://github.com/ORCID/ORCID-Source/tree/master/orcid-api-web). Contact support@orcid.org for help with using the API with your use case.
