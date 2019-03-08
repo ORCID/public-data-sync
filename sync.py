@@ -95,8 +95,9 @@ if __name__ == "__main__":
 			last_modified_date = datetime.strptime(last_modified_str, date_format_no_millis)
 						
 		if last_modified_date >= last_sync:
-			logger.info('Adding %s to the sync list, since it was modified on %s', orcid, last_modified_str)
 			records_to_sync.append(orcid) 
+			if len(records_to_sync) % 1000 == 0:
+				logger.info('Records to sync so far: %s', len(records_to_sync))
 		else:
 			# Since the lambda file is ordered by last_modified date descendant, 
 			# when last_modified_date < last_sync we don't need to parse any more lines
