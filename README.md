@@ -22,24 +22,26 @@ When the synchronization process starts, the script will create a set of folders
 
 ## Quick setup
 
-1. Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org) requesting a set of [Amazon AWS](https://aws.amazon.com) credentials to access the ORCID public record script.
+1. Set up an [AWS IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-set-up.html)
 
-2. Install [python 2.7.6+](https://www.python.org/download/releases/2.7/)
+2. Send the [User ARN](https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html) of the IAM user to the ORCID team at [support@orcid.org](mailto:support@orcid.org) and ask for access Amazon S3 ORCID data sync repository
 
-3. Install the [python PIP](https://pip.pypa.io/en/stable/installing/) module
+3. Install [python 2.7.6+](https://www.python.org/download/releases/2.7/)
 
-4. Install script dependencies:
+4. Install the [python PIP](https://pip.pypa.io/en/stable/installing/) module
+
+5. Install script dependencies:
   * pip2 install -r public-data-sync/requirements.txt
 
-5. Configure your [Amazon AWS credentials](https://aws.amazon.com):
+6. Configure your [Amazon AWS credentials](https://aws.amazon.com):
 
-  * AWS Access Key ID: Provided by ORCID
-  * AWS Secret Access Key: Provided by ORCID
+  * AWS Access Key ID: For the AWS IAM user that you created
+  * AWS Secret Access Key: For the AWS IAM user that you created
   * Default region name: Your region, see [Specifying AWS Regions](http://docs.aws.amazon.com/powershell/latest/userguide/pstools-installing-specifying-region.html) for more information
   * Default output format: XML
   * For more information see [Configure Amazon AWS credentials](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-using-examples)
 
-6. Verify you have at least 250GB available in your hard drive to store the ORCID public data sync
+7. Verify you have at least 250GB available in your hard drive to store the ORCID public data sync
  
 ## Running the script download.py script
 
