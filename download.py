@@ -142,7 +142,7 @@ def process_summaries():
 		# Create a PageIterator from the Paginator
 		page_iterator = None
 		if recovery:
-			f = open('activities_next_continuation_token.config', 'r')
+			f = open('summary_next_continuation_token.config', 'r')
 			continuation = f.readline()
 			page_iterator = paginator.paginate(Bucket=summaries_bucket, ContinuationToken=continuation, PaginationConfig={'PageSize': 1000})
 		else:
