@@ -71,7 +71,7 @@ def download_summary(element):
 	try:
 		if not os.path.exists(file_path):
 			os.makedirs(file_path)
-	except OSError, e:			
+	except:			
 		pass
 		
 	try:
@@ -105,7 +105,7 @@ def download_activity(element):
 	try:
 		if not os.path.exists(file_path):
 			os.makedirs(file_path)
-	except OSError, e:			
+	except:			
 		pass
 		
 	try:
@@ -154,7 +154,7 @@ def process_summaries():
 			page_count += 1
 			elements = []
 			for element in page['Contents']:
-				elements.append(element['Key'].decode('utf-8'))
+				elements.append(element['Key'])
 			pool = Pool(processes=MAX_THREADS)		
 			pool.map(download_summary, elements)
 			pool.close()
@@ -221,7 +221,7 @@ def process_activities():
 if __name__ == "__main__":
 	if download_summaries is False and download_activities is False:
 		logger.error('Please specify the elements you want to download using the -s or -a flag')
-		raise
+		raise RuntimeError('Please specify the elements you want to download using the -s or -a flag')
 
 	# Create the path directory
 	if not os.path.exists(path):

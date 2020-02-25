@@ -20,18 +20,20 @@ These scripts will synchronize a given folder with the latest content available 
 
 When the synchronization process starts, the script will create a set of folders that will contain all ORCID records distributed by the [checksum](http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier) of the ORCID ID.
 
+Please note that these scripts have been updated to work with Python 3.
+
 ## Quick setup
 
 1. Ensure that you are set up to handle the sync files. Verify you have at least 250GB available in your hard drive and are able to process the files (each ORCID records is stored as multiple files). You may want to first look at the [ORCID Public Data File](https://orcid.org/content/download-file) to see an example of what to expect when using the sycn process.
 
 2. Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org) requesting a set of [Amazon AWS](https://aws.amazon.com) credentials to access the ORCID public record script.
 
-3. Install [python 2.7.6+](https://www.python.org/download/releases/2.7/)
+3. Install [python 3.7.6+](https://www.python.org/downloads/release/python-376/)
 
 4. Install the [python PIP](https://pip.pypa.io/en/stable/installing/) module
 
 5. Install script dependencies:
-  * pip2 install -r public-data-sync/requirements.txt
+  * pip3 install -r public-data-sync/requirements.txt
 
 6. Configure your [Amazon AWS credentials](https://aws.amazon.com):
 
