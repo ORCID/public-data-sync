@@ -1,10 +1,10 @@
 ﻿## ORCID public data sync
 
-The public data sync contains a snapshot of all public data in the ORCID Registry associated with any ORCID record that was created or claimed by an individual. 
+The public data sync contains a snapshot of all public data in the ORCID Registry associated with any ORCID record that was created or claimed by an individual. S3 access to use the script is availble to [premium ORCID members](https://orcid.org/about/membership), contact support@orcic.org to get credentials.
 
 These are Python scripts, based on the Amazon AWS CLI API; it is just a reference implementation intended to show ORCID members how to access the public data sync on demand allowing them to be up to date with the latest public data in the ORCID registry.
 
-Members can create their own implementation using the different APIs that Amazon provides to access S3: 
+Premium members can create their own implementation using the different APIs that Amazon provides to access S3: 
 
 | API | URL |
 | --- | --- |
