@@ -1,10 +1,10 @@
 ﻿## ORCID public data sync
 
-The public data sync contains a snapshot of all public data in the ORCID Registry associated with any ORCID record that was created or claimed by an individual. 
+The public data sync contains a snapshot of all public data in the ORCID Registry associated with any ORCID record that was created or claimed by an individual. S3 access to use the script is availble to [premium ORCID members](https://orcid.org/about/membership), contact support@orcic.org to get credentials.
 
 These are Python scripts, based on the Amazon AWS CLI API; it is just a reference implementation intended to show ORCID members how to access the public data sync on demand allowing them to be up to date with the latest public data in the ORCID registry.
 
-Members can create their own implementation using the different APIs that Amazon provides to access S3: 
+Premium members can create their own implementation using the different APIs that Amazon provides to access S3: 
 
 | API | URL |
 | --- | --- |
@@ -14,13 +14,34 @@ Members can create their own implementation using the different APIs that Amazon
 | Java SDK: | https://aws.amazon.com/es/developers/getting-started/java/ |
 | Others: | https://aws.amazon.com/es/developers/getting-started/ |
 
-## Technical description
+### Technical description
 
 These scripts will synchronize a given folder with the latest content available in the [Amazon S3](https://aws.amazon.com/s3) ORCID data sync repository. The download.py script will fetch all public content available, the sync.py script will sync the content modified since the last time the download.py or the sync.py script ran, since a given number of days back, or since the last 30 days if none of the options is provided.
 
 When the synchronization process starts, the script will create a set of folders that will contain all ORCID records distributed by the [checksum](http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier) of the ORCID ID.
 
-## Quick setup
+## Other options
+
+Before setting up the sync process you may want to consider if one of these options will works better for you. Contact support@orcid.org for more information or suggestions based on your use case.
+
+### Webhooks
+
+Premium members can [set up webhooks](https://github.com/ORCID/ORCID-Source/blob/master/orcid-api-web/tutorial/webhooks.md) to get notifications when specific records they are watching are updated.
+
+### Lambda file
+
+A [Lambda file](http://74804fb637bd8e2fba5b-e0a029c2f87486cddec3b416996a6057.r3.cf1.rackcdn.com/last_modified.csv.tar) is available listing the last time each ORCID record was modified, modified records can then be called using the API to see what changes were made.
+
+### The ORCID API
+
+You may be able to [search](https://github.com/ORCID/ORCID-Source/blob/master/orcid-api-web/tutorial/search.md) the [ORCID API](https://github.com/ORCID/ORCID-Source/tree/master/orcid-api-web), searching by last modified date is supported. 
+
+### Public Datafile
+
+Once a year a static [public data file](https://support.orcid.org/hc/en-us/articles/360006897394-How-do-I-get-the-public-data-file-) of the ORCID Registry is published under a CC0 license and can be downloaded by anyone. 
+
+
+## Sync Quick setup
 
 1. Ensure that you are set up to handle the sync files. Verify you have at least 250GB available in your hard drive and are able to process the files (each ORCID records is stored as multiple files). You may want to first look at the [ORCID Public Data File](https://orcid.org/content/download-file) to see an example of what to expect when using the sycn process.
 
@@ -114,8 +135,3 @@ That will depend on you hardware configuration and the bandwidth you have, howev
 
 We only offer the sycn files in ORCID XML using the [2.0 schema](https://github.com/ORCID/ORCID-Source/tree/master/orcid-model/src/main/resources/record_2.0). If you are working with JSON, you may want to consider using the [ORCID Converstion Utility](https://github.com/ORCID/orcid-conversion-lib)
 
-+ Are there other options for tracking changes to ORCID records?
-
-   * Premium members can [set up webhooks](https://github.com/ORCID/ORCID-Source/blob/master/orcid-api-web/tutorial/webhooks.md) to get notifications when specific records they are watching are updated.
-   * A [Lambda file](http://74804fb637bd8e2fba5b-e0a029c2f87486cddec3b416996a6057.r3.cf1.rackcdn.com/last_modified.csv.tar) is available listing the last time each ORCID record was modified, modified records can then be called using the API to see what changes were made.
-   * Depending on your use case, you may be able to query the [ORCID API](https://github.com/ORCID/ORCID-Source/tree/master/orcid-api-web). Contact support@orcid.org for help with using the API with your use case.
