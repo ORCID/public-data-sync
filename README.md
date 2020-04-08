@@ -24,7 +24,7 @@ Please note that these scripts have been updated to work with Python 3.
 
 ## Quick setup
 
-1. Ensure that you are set up to handle the sync files. Verify you have at least 250GB available in your hard drive and are able to process the files (each ORCID records is stored as multiple files). You may want to first look at the [ORCID Public Data File](https://orcid.org/content/download-file) to see an example of what to expect when using the sycn process.
+1. Ensure that you are set up to handle the sync files. Verify you have at least 250GB available in your hard drive and are able to process the files (each ORCID records is stored as multiple files). You may want to first look at the [ORCID Public Data File](https://orcid.org/content/download-file) to see an example of what to expect when using the sync process.
 
 2. Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org) requesting a set of [Amazon AWS](https://aws.amazon.com) credentials to access the ORCID public record script.
 
