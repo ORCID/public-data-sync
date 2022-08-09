@@ -20,18 +20,20 @@ These scripts will synchronize a given folder with the latest content available 
 
 When the synchronization process starts, the script will create a set of folders that will contain all ORCID records distributed by the [checksum](http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier) of the ORCID ID.
 
+Please note that these scripts have been updated to work with Python 3.
+
 ## Quick setup
 
-1. Ensure that you are set up to handle the sync files. Verify you have at least 250GB available in your hard drive and are able to process the files (each ORCID records is stored as multiple files). You may want to first look at the [ORCID Public Data File](https://orcid.org/content/download-file) to see an example of what to expect when using the sycn process.
+1. Ensure that you are set up to handle the sync files. Verify you have at least 250GB available in your hard drive and are able to process the files (each ORCID records is stored as multiple files). You may want to first look at the [ORCID Public Data File](https://orcid.org/content/download-file) to see an example of what to expect when using the sync process.
 
 2. Contact the ORCID team at [support@orcid.org](mailto:support@orcid.org) requesting a set of [Amazon AWS](https://aws.amazon.com) credentials to access the ORCID public record script.
 
-3. Install [python 2.7.6+](https://www.python.org/download/releases/2.7/)
+3. Install [python 3.7.6+](https://www.python.org/downloads/release/python-376/)
 
-4. Install the [python PIP](https://pip.pypa.io/en/stable/installing/) module
+4. Install the [python PIP](https://pip.pypa.io/en/stable/installation/) module
 
 5. Install script dependencies:
-  * pip2 install -r public-data-sync/requirements.txt
+  * pip3 install -r public-data-sync/requirements.txt
 
 6. Configure your [Amazon AWS credentials](https://aws.amazon.com):
 
@@ -119,3 +121,7 @@ We only offer the sycn files in ORCID XML using the [2.0 schema](https://github.
    * Premium members can [set up webhooks](https://github.com/ORCID/ORCID-Source/blob/master/orcid-api-web/tutorial/webhooks.md) to get notifications when specific records they are watching are updated.
    * A Lambda file is available listing the last time each ORCID record was modified, modified records can then be called using the API to see what changes were made.
    * Depending on your use case, you may be able to query the [ORCID API](https://github.com/ORCID/ORCID-Source/tree/master/orcid-api-web). Contact support@orcid.org for help with using the API with your use case.
+
++ Is this still available in python 2?
+
+For legacy integrations, we provide `requirements.python_2_7.txt` and `download.python_2_7.py` that should run in python 2.7, however, they are not supported anymore and might stop working at any point.
