@@ -30,7 +30,7 @@ Please note that these scripts have been updated to work with Python 3.
 
 3. Install [python 3.7.6+](https://www.python.org/downloads/release/python-376/)
 
-4. Install the [python PIP](https://pip.pypa.io/en/stable/installing/) module
+4. Install the [python PIP](https://pip.pypa.io/en/stable/installation/) module
 
 5. Install script dependencies:
   * pip3 install -r public-data-sync/requirements.txt
