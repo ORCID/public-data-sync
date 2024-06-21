@@ -3,7 +3,7 @@ import logging
 import os
 import os.path
 import subprocess
-from multiprocessing import Process
+from multiprocessing import Pool
 from datetime import datetime
 from datetime import timedelta
 import CustomLogHandler
@@ -40,6 +40,7 @@ parser.add_argument('-s', '--summaries', help='Download summaries', action='stor
 parser.add_argument('-a', '--activities', help='Download activities', action='store_true')
 parser.add_argument('-t', '--tar', help='Compress the dump', action='store_true')
 parser.add_argument('-d', '--days', help='Days to sync', type=integer_param_validator)
+parser.add_argument('-max', '--max_threads', help='Maximum number of threads', type=integer_param_validator, default=10)
 args = parser.parse_args()
 
 path = args.path if args.path.endswith('/') else (args.path + '/')
@@ -48,7 +49,35 @@ download_summaries = args.summaries
 download_activities = args.activities
 days_to_sync = args.days
 tar_dump = args.tar
+max_threads = args.max_threads
 
+def sync_summaries(orcid_to_sync):
+	suffix = orcid_to_sync[-3:]
+	prefix = suffix + '/' + orcid_to_sync + '.xml'
+	subprocess.call('aws s3 cp ' + summaries_bucket + prefix + ' ' + path + 'summaries/' + prefix, shell=True)
+
+def sync_activities(orcid_to_sync):
+	suffix = orcid_to_sync[-3:]
+	prefix = suffix + '/' + orcid_to_sync + '/'
+	local_directory = path + 'activities/' + prefix			
+	# fetch data from S3
+	logger.info('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete')
+	subprocess.call('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete', shell=True)
+	# aws cli will remove the files but not the folders so, 
+	# we need to check if the folders are empty and delete it
+	if os.path.exists(local_directory) and os.path.isdir(local_directory): 
+		for root, dirs, files in os.walk(local_directory):
+			for dir in dirs:
+				if not os.listdir(local_directory + '/' + dir):				
+					logger.info('Deleting %s because it is empty', local_directory + '/' + dir)
+					shutil.rmtree(local_directory + '/' + dir)
+				if not os.listdir(local_directory):
+					logger.info('Deleting %s because because it is empty', local_directory)
+					shutil.rmtree(local_directory)
+				# delete the suffix folder if needed
+				if not os.listdir(path + 'activities/' + suffix):
+					logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
+					shutil.rmtree(path + 'activities/' + suffix)
 #---------------------------------------------------------
 # Main process
 #---------------------------------------------------------
@@ -105,32 +134,16 @@ if __name__ == "__main__":
 	
 	logger.info('Records to sync: %s', len(records_to_sync))
 	
-	for orcid_to_sync in records_to_sync:
-		suffix = orcid_to_sync[-3:]
-		if download_summaries:
-			prefix = suffix + '/' + orcid_to_sync + '.xml'
-			subprocess.call('aws s3 cp ' + summaries_bucket + prefix + ' ' + path + 'summaries/' + prefix, shell=True)
-		if download_activities:
-			prefix = suffix + '/' + orcid_to_sync + '/'
-			local_directory = path + 'activities/' + prefix			
-			# fetch data from S3
-			logger.info('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete')
-			subprocess.call('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete', shell=True)
-			# aws cli will remove the files but not the folders so, 
-			# we need to check if the folders are empty and delete it
-			if os.path.exists(local_directory) and os.path.isdir(local_directory): 
-				for root, dirs, files in os.walk(local_directory):
-					for dir in dirs:
-						if not os.listdir(local_directory + '/' + dir):				
-							logger.info('Deleting %s because it is empty', local_directory + '/' + dir)
-							shutil.rmtree(local_directory + '/' + dir)
-				if not os.listdir(local_directory):
-					logger.info('Deleting %s because because it is empty', local_directory)
-					shutil.rmtree(local_directory)
-				# delete the suffix folder if needed
-				if not os.listdir(path + 'activities/' + suffix):
-					logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
-					shutil.rmtree(path + 'activities/' + suffix)
+	pool = Pool(processes=max_threads)
+
+	if download_summaries:
+		pool.map(sync_summaries, records_to_sync)
+
+	if download_activities:
+		pool.map(sync_activities, records_to_sync)
+
+	pool.close()
+	pool.join()
 
 	# keep track of the last time this process ran
 	file = open('last_ran.config','w') 
