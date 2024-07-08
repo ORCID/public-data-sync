@@ -3,11 +3,13 @@ import logging
 import os
 import os.path
 import subprocess
+import boto3
 from multiprocessing import Pool
 from datetime import datetime
 from datetime import timedelta
 import CustomLogHandler
 import shutil
+import concurrent.futures
 
 logger = logging.getLogger('sync')
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -16,8 +18,8 @@ fileHandler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
-summaries_bucket = 's3://v2.0-summaries/'
-activities_bucket = 's3://v2.0-activities/'
+summaries_bucket = 'v2.0-summaries'
+activities_bucket = 'v2.0-activities'
 
 date_format = '%Y-%m-%d %H:%M:%S.%f'
 date_format_no_millis = '%Y-%m-%d %H:%M:%S'
@@ -50,19 +52,54 @@ download_activities = args.activities
 days_to_sync = args.days
 tar_dump = args.tar
 max_threads = args.max_threads
+records_to_sync = []
+
+# Create a client
+s3client = boto3.client('s3')
 
 def sync_summaries(orcid_to_sync):
 	suffix = orcid_to_sync[-3:]
 	prefix = suffix + '/' + orcid_to_sync + '.xml'
-	subprocess.call('aws s3 cp ' + summaries_bucket + prefix + ' ' + path + 'summaries/' + prefix, shell=True)
+	file_path = path + 'summaries/' + suffix + '/'
+	file_name = orcid_to_sync + '.xml'
+	try:
+		if not os.path.exists(file_path):
+			os.makedirs(file_path)
+	except:
+		pass
+	logger.info('Downloading ' + file_name + ' to ' + file_path)
 
-def sync_activities(orcid_to_sync):
-	suffix = orcid_to_sync[-3:]
-	prefix = suffix + '/' + orcid_to_sync + '/'
-	local_directory = path + 'activities/' + prefix			
-	# fetch data from S3
-	logger.info('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete')
-	subprocess.call('aws s3 sync ' + activities_bucket + prefix + ' ' + local_directory + ' --delete', shell=True)
+	try:
+		# Downloading the file
+		s3client.download_file(summaries_bucket, prefix, file_path + file_name)
+	except ClientError as e:
+		logger.exception('Error fetching ' + element)
+		logger.exception(e)
+
+def sync_activities(element):
+	components = element.split('/')	
+	# Checksum
+	checksum = components[0]
+	# ORCID
+	orcid = components[1]
+	# Activity type
+	type = components [2]
+	# File name 
+	name = components[3]
+	
+	file_path = path + 'activities/' + checksum + '/' + orcid + '/' + type + '/'
+	logger.info('Downloading ' + name + ' to ' + file_path)
+	try:
+		if not os.path.exists(file_path):
+			os.makedirs(file_path)
+	except:
+		pass
+	try:
+		# Downloading the file
+		s3client.download_file(activities_bucket, element, file_path + name);	
+	except ClientError as e:
+		logger.exception('Error fetching ' + element)
+		logger.exception(e)
 	# aws cli will remove the files but not the folders so, 
 	# we need to check if the folders are empty and delete it
 	if os.path.exists(local_directory) and os.path.isdir(local_directory): 
@@ -78,6 +115,33 @@ def sync_activities(orcid_to_sync):
 				if not os.listdir(path + 'activities/' + suffix):
 					logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
 					shutil.rmtree(path + 'activities/' + suffix)
+                    
+def process_activities(orcid_to_sync):
+    suffix = orcid_to_sync[-3:]
+    prefix = suffix + '/' + orcid_to_sync
+    paginator = s3client.get_paginator('list_objects_v2')
+    page_iterator = paginator.paginate(Bucket=activities_bucket, Prefix=prefix, PaginationConfig={'PageSize': 1000})
+
+    page_count = 1
+    for page in page_iterator:
+        logger.info('Activities page count: ' + str(page_count))
+        page_count += 1
+        elements = []
+        for element in page['Contents']:
+            elements.append(element['Key'])
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
+            executor.map(sync_activities, elements)
+
+        continuation_token = None
+        try:
+            continuation_token = page['NextContinuationToken']
+        except:
+            logger.info('No more continuation tokens')
+        file = open('activities_next_continuation_token.config','w') 
+        file.write(str(continuation_token))  
+        file.close()
+
 #---------------------------------------------------------
 # Main process
 #---------------------------------------------------------
@@ -86,8 +150,7 @@ if __name__ == "__main__":
 
 	# Download the lambda file
 	logger.info('Downloading the lambda file')	
-	subprocess.call('aws s3 cp s3://orcid-lambda-file/last_modified.csv.tar last_modified.csv.tar', shell=True)
-	
+	s3client.download_file('orcid-lambda-file', 'last_modified.csv.tar', 'last_modified.csv.tar');	
 	# Decompress the file
 	logger.info('Decompressing the lambda file')	
 	subprocess.call('tar -xzvf last_modified.csv.tar', shell=True)
@@ -105,7 +168,6 @@ if __name__ == "__main__":
 		
 	logger.info('Sync records modified after %s', str(last_sync))
 		
-	records_to_sync = []
 
 	is_first_line = True
 	
@@ -140,7 +202,7 @@ if __name__ == "__main__":
 		pool.map(sync_summaries, records_to_sync)
 
 	if download_activities:
-		pool.map(sync_activities, records_to_sync)
+		pool.map(process_activities, records_to_sync)
 
 	pool.close()
 	pool.join()
