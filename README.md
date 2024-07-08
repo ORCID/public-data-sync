@@ -35,7 +35,7 @@ Please note that these scripts have been updated to work with Python 3.
 5. Install script dependencies:
   * pip3 install -r public-data-sync/requirements.txt
 
-6. Configure your [Amazon AWS credentials](https://aws.amazon.com):
+6. Configure your [Amazon AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html):
 
   * AWS Access Key ID: Provided by ORCID
   * AWS Secret Access Key: Provided by ORCID
