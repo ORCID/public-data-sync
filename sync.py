@@ -15,7 +15,6 @@ logger = logging.getLogger('sync')
 formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 fileHandler = CustomLogHandler.CustomLogHandler('sync.log')
 fileHandler.setFormatter(formatter)
-logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
 summaries_bucket = 'v2.0-summaries'
@@ -42,6 +41,7 @@ parser.add_argument('-s', '--summaries', help='Download summaries', action='stor
 parser.add_argument('-a', '--activities', help='Download activities', action='store_true')
 parser.add_argument('-t', '--tar', help='Compress the dump', action='store_true')
 parser.add_argument('-d', '--days', help='Days to sync', type=integer_param_validator)
+parser.add_argument('-l', '--log', help='Set the logging level, DEBUG by default', default='DEBUG')
 parser.add_argument('-max', '--max_threads', help='Maximum number of threads', type=integer_param_validator, default=10)
 args = parser.parse_args()
 
@@ -49,10 +49,21 @@ path = args.path if args.path.endswith('/') else (args.path + '/')
 path = path + 'ORCID_public_data_files/'
 download_summaries = args.summaries
 download_activities = args.activities
+log_level = args.log
 days_to_sync = args.days
 tar_dump = args.tar
 max_threads = args.max_threads
 records_to_sync = []
+
+match log_level:
+	case 'DEBUG':
+		logger.setLevel(logging.DEBUG)
+	case 'INFO':
+		logger.setLevel(logging.INFO)
+	case 'WARN':
+		logger.setLevel(logging.WARN)
+	case _:
+		logger.setLevel(logging.ERROR)
 
 # Create a client
 s3client = boto3.client('s3')
@@ -67,7 +78,7 @@ def sync_summaries(orcid_to_sync):
 			os.makedirs(file_path)
 	except:
 		pass
-	logger.info('Downloading ' + file_name + ' to ' + file_path)
+	logger.debug('Downloading ' + file_name + ' to ' + file_path)
 
 	try:
 		# Downloading the file
@@ -88,7 +99,7 @@ def sync_activities(element):
 	name = components[3]
 	
 	file_path = path + 'activities/' + checksum + '/' + orcid + '/' + type + '/'
-	logger.info('Downloading ' + name + ' to ' + file_path)
+	logger.debug('Downloading ' + name + ' to ' + file_path)
 	try:
 		if not os.path.exists(file_path):
 			os.makedirs(file_path)
@@ -123,12 +134,15 @@ def process_activities(orcid_to_sync):
     page_iterator = paginator.paginate(Bucket=activities_bucket, Prefix=prefix, PaginationConfig={'PageSize': 1000})
 
     page_count = 1
-    for page in page_iterator:
-        logger.info('Activities page count: ' + str(page_count))
+    for page in page_iterator:		
+        logger.info('Activities page count: ' + str(page_count))		
         page_count += 1
         elements = []
-        for element in page['Contents']:
-            elements.append(element['Key'])
+        if 'Contents' in page:
+            for element in page['Contents']:
+                elements.append(element['Key'])
+        else:
+            logger.warn('Unable to find activities for %s', orcid_to_sync)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             executor.map(sync_activities, elements)
@@ -137,7 +151,7 @@ def process_activities(orcid_to_sync):
         try:
             continuation_token = page['NextContinuationToken']
         except:
-            logger.info('No more continuation tokens')
+            logger.debug('No more continuation tokens')
         file = open('activities_next_continuation_token.config','w') 
         file.write(str(continuation_token))  
         file.close()
@@ -166,8 +180,7 @@ if __name__ == "__main__":
 	else:
 		last_sync = (datetime.now() - timedelta(days=30))
 		
-	logger.info('Sync records modified after %s', str(last_sync))
-		
+	logger.info('Sync records modified after %s', str(last_sync))		
 
 	is_first_line = True
 	
@@ -187,7 +200,7 @@ if __name__ == "__main__":
 						
 		if last_modified_date >= last_sync:
 			records_to_sync.append(orcid) 
-			if len(records_to_sync) % 1000 == 0:
+			if len(records_to_sync) % 10000 == 0:
 				logger.info('Records to sync so far: %s', len(records_to_sync))
 		else:
 			# Since the lambda file is ordered by last_modified date descendant, 
@@ -199,17 +212,21 @@ if __name__ == "__main__":
 	pool = Pool(processes=max_threads)
 
 	if download_summaries:
+		logger.info('Syncing summaries')
 		pool.map(sync_summaries, records_to_sync)
 
 	if download_activities:
+		logger.info('Syncing activities')
 		pool.map(process_activities, records_to_sync)
 
 	pool.close()
 	pool.join()
 
+	logger.info('All files are in sync now')
+
 	# keep track of the last time this process ran
 	file = open('last_ran.config','w') 
 	file.write(str(start_time))  
 	file.close()
-			
-						
+	logger.info('last_ran.config is ready')
+	logger.info('End of script')
