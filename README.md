@@ -83,6 +83,12 @@ Script params:
    * a: Use it to sync activities
    * t: Use it to create a compressed directory (.tar.gz) for each of the types (activities or summaries) you are syncing 
    * d: Use it to indicate the number of days in the past the record will sync, it is not required and if missing, the system will use the `last_ran.config` file to determine which files it have to sync
+   * max: Use it to indicate the max number of threads used to concurrently download file from S3, it is set to 10 by detault 
+   * l: Use it to configure the log level:
+      * DEBUG: The most verbose mode, logs at the start of evey process, logs every downloaded file and logs any warning or error that happens. Please notice this mode is resource intensive and might make your script slower.
+      * INFO: It will log the start of every process and any errors or warnings that happens.
+      * WARN: It will log only warnings or errors.
+      * ERROR: It will log only errors.
 
 Start the sync process providing at least the path parameter and -s or -a
    
