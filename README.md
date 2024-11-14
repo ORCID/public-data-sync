@@ -18,7 +18,7 @@ Members can create their own implementation using the different APIs that Amazon
 
 These scripts will synchronize a given folder with the latest content available in the [Amazon S3](https://aws.amazon.com/s3) ORCID data sync repository. The download.py script will fetch all public content available, the sync.py script will sync the content modified since the last time the download.py or the sync.py script ran, since a given number of days back, or since the last 30 days if none of the options is provided.
 
-When the synchronization process starts, the script will create a set of folders that will contain all ORCID records distributed by the [checksum](http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier) of the ORCID ID.
+When the synchronization process starts, the script will create a set of folders that will contain all ORCID records distributed by the [checksum](https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier) of the ORCID ID.
 
 Please note that these scripts have been updated to work with Python 3.
 
