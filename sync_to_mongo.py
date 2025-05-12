@@ -59,7 +59,7 @@ def bulk_upsert_orcid_files(file_paths):
                     upsert=True
                 )
             )
-            if len(bulk_operations) == 100:
+            if len(bulk_operations) == 10:
                 try:
                     logger.info(f"Executing bulk upsert for {len(bulk_operations)} documents")
                     result = collection.bulk_write(bulk_operations)
