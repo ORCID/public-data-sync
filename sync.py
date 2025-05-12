@@ -4,6 +4,7 @@ import os
 import os.path
 import subprocess
 import boto3
+from botocore.exceptions import ClientError
 from multiprocessing import Pool
 from datetime import datetime
 from datetime import timedelta
