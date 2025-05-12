@@ -64,9 +64,7 @@ def bulk_upsert_orcid_files(file_paths):
             )
             if len(bulk_operations) == 500:
                 try:
-                    logger.info(f"Executing bulk upsert for {len(bulk_operations)} documents")
                     result = collection.bulk_write(bulk_operations)
-                    logger.info(f"Bulk upsert completed: {result.bulk_api_result}")
                     bulk_operations = []
                 except BulkWriteError as bwe:
                     logger.error(f"Bulk write error: {bwe.details}")
