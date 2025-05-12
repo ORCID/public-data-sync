@@ -44,6 +44,9 @@ def bulk_upsert_orcid_files(file_paths):
             with open(file_path, 'r', encoding='utf-8') as file:
                 xml_content = file.read()
 
+            if len(xml_content.encode('utf-8')) >= 16 * 1024 * 1024:
+                logger.warning(f"Skipping ORCID {orcid_id} — file too large")
+                continue
             last_updated = datetime.now()
 
             document = {
@@ -59,7 +62,7 @@ def bulk_upsert_orcid_files(file_paths):
                     upsert=True
                 )
             )
-            if len(bulk_operations) == 10:
+            if len(bulk_operations) == 500:
                 try:
                     logger.info(f"Executing bulk upsert for {len(bulk_operations)} documents")
                     result = collection.bulk_write(bulk_operations)
