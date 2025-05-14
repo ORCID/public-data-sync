@@ -85,7 +85,7 @@ def sync_summaries(orcid_to_sync):
 		# Downloading the file
 		s3client.download_file(summaries_bucket, prefix, file_path + file_name)
 	except ClientError as e:
-		logger.exception('Error fetching ' + element)
+		logger.exception('Error fetching ' + file_path + file_name)
 		logger.exception(e)
 
 def sync_activities(element):
