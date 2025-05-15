@@ -85,7 +85,7 @@ def sync_summaries(orcid_to_sync):
 		# Downloading the file
 		s3client.download_file(summaries_bucket, prefix, file_path + file_name)
 	except ClientError as e:
-		logger.exception('Error fetching ' + file_path + file_name)
+		logger.exception('Error fetching ' + orcid_to_sync)
 		logger.exception(e)
 
 def sync_activities(element):
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 	logger.info('Sync records modified after %s', str(last_sync))		
 
 	is_first_line = True
-	
+	sync_now = False
 	for line in open('last_modified.csv', 'r'):
 		if is_first_line:
 			is_first_line = False
@@ -198,15 +198,17 @@ if __name__ == "__main__":
 			last_modified_date = datetime.strptime(last_modified_str, date_format)
 		except ValueError:
 			last_modified_date = datetime.strptime(last_modified_str, date_format_no_millis)
-						
-		if last_modified_date >= last_sync:
-			records_to_sync.append(orcid) 
-			if len(records_to_sync) % 10000 == 0:
-				logger.info('Records to sync so far: %s', len(records_to_sync))
-		else:
-			# Since the lambda file is ordered by last_modified date descendant, 
-			# when last_modified_date < last_sync we don't need to parse any more lines
-			break
+		if orcid == '0000-0001-9353-9811':
+			sync_now = True
+		if sync_now:		
+			if last_modified_date >= last_sync:
+				records_to_sync.append(orcid) 
+				if len(records_to_sync) % 10000 == 0:
+					logger.info('Records to sync so far: %s', len(records_to_sync))
+			else:
+				# Since the lambda file is ordered by last_modified date descendant, 
+				# when last_modified_date < last_sync we don't need to parse any more lines
+				break
 	
 	logger.info('Records to sync: %s', len(records_to_sync))
 	
