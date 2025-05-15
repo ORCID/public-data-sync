@@ -192,14 +192,13 @@ if __name__ == "__main__":
 		line = line.rstrip('\n')
 		elements = line.split(',')	
 		orcid = elements[0]
-		
+		if orcid = '0000-0001-9353-9811':
+			sync_now = True
 		last_modified_str = elements[3]
 		try:
 			last_modified_date = datetime.strptime(last_modified_str, date_format)
 		except ValueError:
 			last_modified_date = datetime.strptime(last_modified_str, date_format_no_millis)
-		if orcid == '0000-0001-9353-9811':
-			sync_now = True
 		if sync_now:		
 			if last_modified_date >= last_sync:
 				records_to_sync.append(orcid) 
