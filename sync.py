@@ -56,15 +56,14 @@ tar_dump = args.tar
 max_threads = args.max_threads
 records_to_sync = []
 
-match log_level:
-	case 'DEBUG':
-		logger.setLevel(logging.DEBUG)
-	case 'INFO':
-		logger.setLevel(logging.INFO)
-	case 'WARN':
-		logger.setLevel(logging.WARN)
-	case _:
-		logger.setLevel(logging.ERROR)
+if log_level == 'DEBUG':
+    logger.setLevel(logging.DEBUG)
+elif log_level == 'INFO':
+    logger.setLevel(logging.INFO)
+elif log_level == 'WARN':
+    logger.setLevel(logging.WARN)
+else:
+    logger.setLevel(logging.ERROR)
 
 # Create a client
 s3client = boto3.client('s3')
