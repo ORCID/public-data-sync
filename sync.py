@@ -4,6 +4,7 @@ import os
 import os.path
 import subprocess
 import boto3
+from botocore.exceptions import ClientError
 from multiprocessing import Pool
 from datetime import datetime
 from datetime import timedelta
@@ -84,7 +85,7 @@ def sync_summaries(orcid_to_sync):
 		# Downloading the file
 		s3client.download_file(summaries_bucket, prefix, file_path + file_name)
 	except ClientError as e:
-		logger.exception('Error fetching ' + element)
+		logger.exception('Error fetching ' + orcid_to_sync)
 		logger.exception(e)
 
 def sync_activities(element):
@@ -183,7 +184,6 @@ if __name__ == "__main__":
 	logger.info('Sync records modified after %s', str(last_sync))		
 
 	is_first_line = True
-	
 	for line in open('last_modified.csv', 'r'):
 		if is_first_line:
 			is_first_line = False
@@ -191,13 +191,12 @@ if __name__ == "__main__":
 		line = line.rstrip('\n')
 		elements = line.split(',')	
 		orcid = elements[0]
-		
 		last_modified_str = elements[3]
 		try:
 			last_modified_date = datetime.strptime(last_modified_str, date_format)
 		except ValueError:
 			last_modified_date = datetime.strptime(last_modified_str, date_format_no_millis)
-						
+				
 		if last_modified_date >= last_sync:
 			records_to_sync.append(orcid) 
 			if len(records_to_sync) % 10000 == 0:
