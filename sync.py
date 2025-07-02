@@ -18,8 +18,8 @@ fileHandler = CustomLogHandler.CustomLogHandler('sync.log')
 fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
 
-summaries_bucket = 'v2.0-summaries'
-activities_bucket = 'v2.0-activities'
+summaries_bucket = 'v3.0-summaries'
+activities_bucket = 'v3.0-activities'
 
 date_format = '%Y-%m-%d %H:%M:%S.%f'
 date_format_no_millis = '%Y-%m-%d %H:%M:%S'

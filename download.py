@@ -19,8 +19,8 @@ fileHandler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
-summaries_bucket = 'v2.0-summaries'
-activities_bucket = 'v2.0-activities'
+summaries_bucket = 'v3.0-summaries'
+activities_bucket = 'v3.0-activities'
 
 now = datetime.now()
 month = str(now.month)
