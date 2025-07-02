@@ -120,7 +120,7 @@ That will depend on you hardware configuration and the bandwidth you have, howev
 
 + Can I get sync files in other formats?
 
-We only offer the sycn files in ORCID XML using the [2.0 schema](https://github.com/ORCID/ORCID-Source/tree/master/orcid-model/src/main/resources/record_2.0). If you are working with JSON, you may want to consider using the [ORCID Converstion Utility](https://github.com/ORCID/orcid-conversion-lib)
+We offer the sync files in ORCID XML using the [3.0 schema](https://github.com/ORCID/ORCID-Source/tree/master/orcid-model/src/main/resources/record_3.0). If you are working with JSON, you may want to consider using the [ORCID Converstion Utility](https://github.com/ORCID/orcid-conversion-lib)
 
 + Are there other options for tracking changes to ORCID records?
 
