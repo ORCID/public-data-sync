@@ -20,7 +20,7 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
 summaries_bucket = 'v3.0-summaries'
-activities_bucket = 'v3.0-activities'
+activities_bucket_base = 'v3.0-activities'
 
 now = datetime.now()
 month = str(now.month)
@@ -85,10 +85,11 @@ def download_summary(element):
 # Download a single activity file
 #---------------------------------------------------------
 def download_activity(element):
-	global s3client		
-	global activities_bucket
-	
-	components = element.split('/')	
+	global s3client
+
+	activities_bucket = element[0]
+	file_to_download = element[1]
+	components = file_to_download.split('/')
 	# Checksum
 	checksum = components[0]
 	# ORCID
@@ -110,9 +111,9 @@ def download_activity(element):
 		
 	try:
 		# Downloading the file
-		s3client.download_file(activities_bucket, element, file_path + name);	
+		s3client.download_file(activities_bucket, file_to_download, file_path + name);
 	except ClientError as e:
-		logger.exception('Error fetching ' + element)
+		logger.exception('Error fetching ' + file_to_download)
 		logger.exception(e)
 		
 #---------------------------------------------------------
@@ -168,18 +169,27 @@ def process_summaries():
 			file.write(str(continuation_token))  
 			file.close()
 		if tar_dump:
-			summaries_dump_name_xml = 'ORCID-API-2.0_xml_' + month + '_' + year + '.tar.gz'
+			summaries_dump_name_xml = 'ORCID-API-3.0_xml_' + month + '_' + year + '.tar.gz'
 			compress(summaries_dump_name_xml, 'summaries')
 
 #---------------------------------------------------------
 # Process activities
 #---------------------------------------------------------
 def process_activities():
+	suffixes = ['a', 'b', 'c']
+	for suffix in suffixes:
+		process_activities_bucket(suffix)
+	if tar_dump:
+		activities_dump_name_xml = 'ORCID-API-3.0_activities__xml_' + month + '_' + year + '.tar.gz'
+		compress(activities_dump_name_xml, 'activities')
+
+def process_activities_bucket(activities_bucket_suffix):
 	global path
-	global activities_bucket
+	global activities_bucket_base
 	global month
 	global year
 	global recovery
+	activities_bucket = activities_bucket_base + '-' + activities_bucket_suffix
 	if download_activities:
 		# Create the paginator
 		paginator = s3client.get_paginator('list_objects_v2')
@@ -188,33 +198,31 @@ def process_activities():
 		if recovery:
 			f = open('activities_next_continuation_token.config', 'r')
 			continuation = f.readline()
-			page_iterator = paginator.paginate(Bucket=activities_bucket, ContinuationToken=continuation, PaginationConfig={'PageSize': 1000})		
+			page_iterator = paginator.paginate(Bucket=activities_bucket, ContinuationToken=continuation, PaginationConfig={'PageSize': 1000})
 		else:
 			page_iterator = paginator.paginate(Bucket=activities_bucket, PaginationConfig={'PageSize': 1000})
-		
+
 		page_count = 1
 		for page in page_iterator:
 			logger.info('Activities page count: ' + str(page_count))
 			page_count += 1
 			elements = []
 			for element in page['Contents']:
-				elements.append(element['Key'].decode('utf-8'))
-			pool = Pool(processes=MAX_THREADS)		
+				elements.append([activities_bucket,  element['Key']])
+			pool = Pool(processes=MAX_THREADS)
 			pool.map(download_activity, elements)
 			pool.close()
-			pool.join()	
+			pool.join()
 			continuation_token = None
 			try:
 				continuation_token = page['NextContinuationToken']
 			except:
 				logger.info('No more continuation tokens')
-			file = open('activities_next_continuation_token.config','w') 
-			file.write(str(continuation_token))  
-			file.close()			
-		if tar_dump:
-			activities_dump_name_xml = 'ORCID-API-2.0_activities_xml_' + month + '_' + year + '.tar.gz'
-			compress(activities_dump_name_xml, 'activities')
-		
+			file = open('activities_next_continuation_token.config', 'w')
+			file.write(str(continuation_token))
+			file.close()
+
+
 #---------------------------------------------------------
 # Main process
 #---------------------------------------------------------
