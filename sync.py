@@ -123,12 +123,12 @@ def sync_activities(element):
 					logger.info('Deleting %s because it is empty', orcid_dir + '/' + dir)
 					shutil.rmtree(orcid_dir + '/' + dir)
 		if not os.listdir(orcid_dir):
-			logger.info('Deleting %s because because it is empty', local_directory)
+			logger.info('Deleting %s because because it is empty', orcid_dir)
 			shutil.rmtree(orcid_dir)
 	# delete the suffix folder if needed
-	if not os.listdir(path + 'activities/' + suffix):
-		logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
-		shutil.rmtree(path + 'activities/' + suffix)
+	if not os.listdir(path + 'activities/' + checksum):
+		logger.info('Deleting %s because because it is empty', path + 'activities/' + checksum)
+		shutil.rmtree(path + 'activities/' + checksum)
                     
 def process_activities(orcid_to_sync):
     suffix = orcid_to_sync[-3:]
