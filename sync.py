@@ -19,7 +19,7 @@ fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
 
 summaries_bucket = 'v3.0-summaries'
-activities_bucket = 'v3.0-activities'
+activities_bucket_base = 'v3.0-activities'
 
 date_format = '%Y-%m-%d %H:%M:%S.%f'
 date_format_no_millis = '%Y-%m-%d %H:%M:%S'
@@ -88,7 +88,9 @@ def sync_summaries(orcid_to_sync):
 		logger.exception(e)
 
 def sync_activities(element):
-	components = element.split('/')	
+	activities_bucket = element[0]
+	file_to_download = element[1]
+	components = file_to_download.split('/')
 	# Checksum
 	checksum = components[0]
 	# ORCID
@@ -97,8 +99,9 @@ def sync_activities(element):
 	type = components [2]
 	# File name 
 	name = components[3]
-	
-	file_path = path + 'activities/' + checksum + '/' + orcid + '/' + type + '/'
+
+	orcid_dir = path + 'activities/' + checksum + '/' + orcid
+	file_path = orcid_dir + '/' + type + '/'
 	logger.debug('Downloading ' + name + ' to ' + file_path)
 	try:
 		if not os.path.exists(file_path):
@@ -107,29 +110,30 @@ def sync_activities(element):
 		pass
 	try:
 		# Downloading the file
-		s3client.download_file(activities_bucket, element, file_path + name);	
+		s3client.download_file(activities_bucket, file_to_download, file_path + name);
 	except ClientError as e:
-		logger.exception('Error fetching ' + element)
+		logger.exception('Error fetching ' + file_to_download)
 		logger.exception(e)
 	# aws cli will remove the files but not the folders so, 
 	# we need to check if the folders are empty and delete it
-	if os.path.exists(local_directory) and os.path.isdir(local_directory): 
-		for root, dirs, files in os.walk(local_directory):
+	if os.path.exists(orcid_dir) and os.path.isdir(orcid_dir):
+		for root, dirs, files in os.walk(orcid_dir):
 			for dir in dirs:
-				if not os.listdir(local_directory + '/' + dir):				
-					logger.info('Deleting %s because it is empty', local_directory + '/' + dir)
-					shutil.rmtree(local_directory + '/' + dir)
-				if not os.listdir(local_directory):
-					logger.info('Deleting %s because because it is empty', local_directory)
-					shutil.rmtree(local_directory)
-				# delete the suffix folder if needed
-				if not os.listdir(path + 'activities/' + suffix):
-					logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
-					shutil.rmtree(path + 'activities/' + suffix)
+				if not os.listdir(orcid_dir + '/' + dir):
+					logger.info('Deleting %s because it is empty', orcid_dir + '/' + dir)
+					shutil.rmtree(orcid_dir + '/' + dir)
+		if not os.listdir(orcid_dir):
+			logger.info('Deleting %s because because it is empty', local_directory)
+			shutil.rmtree(orcid_dir)
+	# delete the suffix folder if needed
+	if not os.listdir(path + 'activities/' + suffix):
+		logger.info('Deleting %s because because it is empty', path + 'activities/' + suffix)
+		shutil.rmtree(path + 'activities/' + suffix)
                     
 def process_activities(orcid_to_sync):
     suffix = orcid_to_sync[-3:]
     prefix = suffix + '/' + orcid_to_sync
+    activities_bucket = get_activities_bucket_name(orcid_to_sync)
     paginator = s3client.get_paginator('list_objects_v2')
     page_iterator = paginator.paginate(Bucket=activities_bucket, Prefix=prefix, PaginationConfig={'PageSize': 1000})
 
@@ -140,7 +144,7 @@ def process_activities(orcid_to_sync):
         elements = []
         if 'Contents' in page:
             for element in page['Contents']:
-                elements.append(element['Key'])
+                elements.append([activities_bucket, element['Key']])
         else:
             logger.warn('Unable to find activities for %s', orcid_to_sync)
 
@@ -155,6 +159,19 @@ def process_activities(orcid_to_sync):
         file = open('activities_next_continuation_token.config','w') 
         file.write(str(continuation_token))  
         file.close()
+
+def get_activities_bucket_name(orcid):
+    last = orcid[-1]  # Get the last character of ORCID
+    bucket_name = activities_bucket_base
+
+    if last in '0123':
+        bucket_name += '-a'
+    elif last in '4567':
+        bucket_name += '-b'
+    else:
+        bucket_name += '-c'
+
+    return bucket_name
 
 #---------------------------------------------------------
 # Main process
@@ -204,7 +221,7 @@ if __name__ == "__main__":
 			# Since the lambda file is ordered by last_modified date descendant, 
 			# when last_modified_date < last_sync we don't need to parse any more lines
 			break
-	
+
 	logger.info('Records to sync: %s', len(records_to_sync))
 	
 	pool = Pool(processes=max_threads)
