@@ -37,7 +37,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--path', help='Path to place the public data files', default='./')
 parser.add_argument('-s', '--summaries', help='Download summaries', action='store_true')
 parser.add_argument('-a', '--activities', help='Download activities', action='store_true')
-parser.add_argument('-t', '--tar', help='Compress the dump', action='store_true')
 parser.add_argument('-d', '--days', help='Days to sync', type=integer_param_validator)
 parser.add_argument('-l', '--log', help='Set the logging level, DEBUG by default', default='DEBUG')
 parser.add_argument('-max', '--max_threads', help='Maximum number of threads', type=integer_param_validator, default=10)
@@ -52,7 +51,6 @@ download_summaries = args.summaries
 download_activities = args.activities
 log_level = args.log
 days_to_sync = args.days
-tar_dump = args.tar
 max_threads = args.max_threads
 summaries_bucket = args.summaries_bucket
 activities_bucket_base = args.activities_bucket_base
