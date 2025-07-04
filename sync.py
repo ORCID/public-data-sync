@@ -18,9 +18,6 @@ fileHandler = CustomLogHandler.CustomLogHandler('sync.log')
 fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
 
-summaries_bucket = 'v3.0-summaries'
-activities_bucket_base = 'v3.0-activities'
-
 date_format = '%Y-%m-%d %H:%M:%S.%f'
 date_format_no_millis = '%Y-%m-%d %H:%M:%S'
 
@@ -40,10 +37,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--path', help='Path to place the public data files', default='./')
 parser.add_argument('-s', '--summaries', help='Download summaries', action='store_true')
 parser.add_argument('-a', '--activities', help='Download activities', action='store_true')
-parser.add_argument('-t', '--tar', help='Compress the dump', action='store_true')
 parser.add_argument('-d', '--days', help='Days to sync', type=integer_param_validator)
 parser.add_argument('-l', '--log', help='Set the logging level, DEBUG by default', default='DEBUG')
 parser.add_argument('-max', '--max_threads', help='Maximum number of threads', type=integer_param_validator, default=10)
+parser.add_argument('-x', '--summaries-bucket', help='The name of the summaries bucket (to override for testing)', default='v3.0-summaries')
+parser.add_argument('-y', '--activities-bucket-base', help='The base name of the activities bucket (to override for testing)', default='v3.0-activities')
+parser.add_argument('-z', '--lambda-bucket', help='The name of the bucket containing the lambda file (to override for testing', default='orcid-lambda-file')
 args = parser.parse_args()
 
 path = args.path if args.path.endswith('/') else (args.path + '/')
@@ -52,8 +51,10 @@ download_summaries = args.summaries
 download_activities = args.activities
 log_level = args.log
 days_to_sync = args.days
-tar_dump = args.tar
 max_threads = args.max_threads
+summaries_bucket = args.summaries_bucket
+activities_bucket_base = args.activities_bucket_base
+lambda_bucket = args.lambda_bucket
 records_to_sync = []
 
 if log_level == 'DEBUG':
@@ -181,7 +182,7 @@ if __name__ == "__main__":
 
 	# Download the lambda file
 	logger.info('Downloading the lambda file')	
-	s3client.download_file('orcid-lambda-file', 'last_modified.csv.tar', 'last_modified.csv.tar');	
+	s3client.download_file(lambda_bucket, 'last_modified.csv.tar', 'last_modified.csv.tar');
 	# Decompress the file
 	logger.info('Decompressing the lambda file')	
 	subprocess.call('tar -xzvf last_modified.csv.tar', shell=True)
