@@ -127,7 +127,3 @@ We offer the sync files in ORCID XML using the [3.0 schema](https://github.com/O
    * Premium members can [set up webhooks](https://github.com/ORCID/ORCID-Source/blob/master/orcid-api-web/tutorial/webhooks.md) to get notifications when specific records they are watching are updated.
    * A Lambda file is available listing the last time each ORCID record was modified, modified records can then be called using the API to see what changes were made.
    * Depending on your use case, you may be able to query the [ORCID API](https://github.com/ORCID/ORCID-Source/tree/master/orcid-api-web). Contact support@orcid.org for help with using the API with your use case.
-
-+ Is this still available in python 2?
-
-For legacy integrations, we provide `requirements.python_2_7.txt` and `download.python_2_7.py` that should run in python 2.7, however, they are not supported anymore and might stop working at any point.
