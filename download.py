@@ -209,7 +209,7 @@ def process_activities():
 		for suffix in suffixes:
 			process_activities_bucket(suffix, continuation_token)
 		if tar_dump:
-			activities_dump_name_xml = 'ORCID-API-3.0_activities__xml_' + month + '_' + year + '.tar.gz'
+			activities_dump_name_xml = 'ORCID-API-3.0_activities_xml_' + month + '_' + year + '.tar.gz'
 			compress(activities_dump_name_xml, 'activities')
 
 def process_activities_bucket(activities_bucket_suffix, continuation_token):
