@@ -168,7 +168,7 @@ def process_summaries():
 				continuation_token = page['NextContinuationToken']
 			except:
 				logger.info('No more continuation tokens')
-			write_continuation_config('summary', continuation_token)
+			write_continuation_config('summary', summaries_bucket, continuation_token)
 		if tar_dump:
 			summaries_dump_name_xml = 'ORCID-API-3.0_xml_' + month + '_' + year + '.tar.gz'
 			compress(summaries_dump_name_xml, 'summaries')
@@ -181,8 +181,8 @@ def read_continuation_config(file_name_prefix):
 			return loaded_data
 	return {}
 
-def write_continuation_config(file_name_prefix, continuation_token):
-	data_to_save = { 'continuation_token': continuation_token}
+def write_continuation_config(file_name_prefix, bucket_name, continuation_token):
+	data_to_save = { 'continuation_token': continuation_token, 'bucket_name': bucket_name}
 	with open(file_name_prefix + '_next_continuation_token.config', 'w') as f:
 		yaml.dump(data_to_save, f)
 
@@ -235,7 +235,7 @@ def process_activities_bucket(activities_bucket_suffix):
 				continuation_token = page['NextContinuationToken']
 			except:
 				logger.info('No more continuation tokens')
-			write_continuation_config('activities', continuation_token)
+			write_continuation_config('activities', activities_bucket, continuation_token)
 
 
 #---------------------------------------------------------
