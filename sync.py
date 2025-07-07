@@ -40,6 +40,7 @@ parser.add_argument('-a', '--activities', help='Download activities', action='st
 parser.add_argument('-d', '--days', help='Days to sync', type=integer_param_validator)
 parser.add_argument('-l', '--log', help='Set the logging level, DEBUG by default', default='DEBUG')
 parser.add_argument('-max', '--max_threads', help='Maximum number of threads', type=integer_param_validator, default=10)
+parser.add_argument('-n', '--page-size', help='The number of s3 items to list in one page', default=1000)
 parser.add_argument('-x', '--summaries-bucket', help='The name of the summaries bucket (to override for testing)', default='v3.0-summaries')
 parser.add_argument('-y', '--activities-bucket-base', help='The base name of the activities bucket (to override for testing)', default='v3.0-activities')
 parser.add_argument('-z', '--lambda-bucket', help='The name of the bucket containing the lambda file (to override for testing', default='orcid-lambda-file')
@@ -52,6 +53,7 @@ download_activities = args.activities
 log_level = args.log
 days_to_sync = args.days
 max_threads = args.max_threads
+page_size = args.page_size
 summaries_bucket = args.summaries_bucket
 activities_bucket_base = args.activities_bucket_base
 lambda_bucket = args.lambda_bucket
@@ -136,7 +138,7 @@ def process_activities(orcid_to_sync):
     prefix = suffix + '/' + orcid_to_sync
     activities_bucket = get_activities_bucket_name(orcid_to_sync)
     paginator = s3client.get_paginator('list_objects_v2')
-    page_iterator = paginator.paginate(Bucket=activities_bucket, Prefix=prefix, PaginationConfig={'PageSize': 1000})
+    page_iterator = paginator.paginate(Bucket=activities_bucket, Prefix=prefix, PaginationConfig={'PageSize': page_size})
 
     page_count = 1
     for page in page_iterator:		
