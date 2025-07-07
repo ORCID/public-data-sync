@@ -8,6 +8,7 @@ from multiprocessing import Process
 from datetime import datetime
 from botocore.exceptions import ClientError
 import CustomLogHandler
+import yaml
 
 # Configure AWS credentials before continue
 # http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files
@@ -144,10 +145,10 @@ def process_summaries():
 		
 		# Create a PageIterator from the Paginator
 		page_iterator = None
-		if recovery:
-			f = open('summary_next_continuation_token.config', 'r')
-			continuation = f.readline()
-			page_iterator = paginator.paginate(Bucket=summaries_bucket, ContinuationToken=continuation, PaginationConfig={'PageSize': 1000})
+		continuation_config = read_continuation_config('summary')
+		if recovery and 'continuation_token' in continuation_config:
+			continuation_token = continuation_config['continuation_token']
+			page_iterator = paginator.paginate(Bucket=summaries_bucket, ContinuationToken=continuation_token, PaginationConfig={'PageSize': 1000})
 		else:
 			page_iterator = paginator.paginate(Bucket=summaries_bucket, PaginationConfig={'PageSize': 1000})		
 		
@@ -166,13 +167,25 @@ def process_summaries():
 			try:
 				continuation_token = page['NextContinuationToken']
 			except:
-				logger.info('No more continuation tokens')			
-			file = open('summary_next_continuation_token.config','w') 
-			file.write(str(continuation_token))  
-			file.close()
+				logger.info('No more continuation tokens')
+			write_continuation_config('summary', continuation_token)
 		if tar_dump:
 			summaries_dump_name_xml = 'ORCID-API-3.0_xml_' + month + '_' + year + '.tar.gz'
 			compress(summaries_dump_name_xml, 'summaries')
+
+def read_continuation_config(file_name_prefix):
+	config_file_name = file_name_prefix + '_next_continuation_token.config'
+	if os.path.exists(file_name_prefix):
+		with open(config_file_name, 'r') as f:
+			loaded_data = yaml.safe_load(f)
+			return loaded_data
+	return {}
+
+def write_continuation_config(file_name_prefix, continuation_token):
+	data_to_save = { 'continuation_token': continuation_token}
+	with open(file_name_prefix + '_next_continuation_token.config', 'w') as f:
+		yaml.dump(data_to_save, f)
+
 
 #---------------------------------------------------------
 # Process activities
@@ -197,10 +210,10 @@ def process_activities_bucket(activities_bucket_suffix):
 		paginator = s3client.get_paginator('list_objects_v2')
 		# Create a PageIterator from the Paginator
 		page_iterator = None
-		if recovery:
-			f = open('activities_next_continuation_token.config', 'r')
-			continuation = f.readline()
-			page_iterator = paginator.paginate(Bucket=activities_bucket, ContinuationToken=continuation, PaginationConfig={'PageSize': 1000})
+		continuation_config = read_continuation_config('activities')
+		if recovery and 'continuation_token' in continuation_config:
+			continuation_token = continuation_config['continuation_token']
+			page_iterator = paginator.paginate(Bucket=activities_bucket, ContinuationToken=continuation_token, PaginationConfig={'PageSize': 1000})
 		else:
 			page_iterator = paginator.paginate(Bucket=activities_bucket, PaginationConfig={'PageSize': 1000})
 
@@ -221,9 +234,7 @@ def process_activities_bucket(activities_bucket_suffix):
 					continuation_token = page['NextContinuationToken']
 				except:
 					logger.info('No more continuation tokens')
-				file = open('activities_next_continuation_token.config', 'w')
-				file.write(str(continuation_token))
-				file.close()
+				write_continuation_config('activities', continuation_token)
 
 
 #---------------------------------------------------------
