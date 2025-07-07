@@ -8,6 +8,7 @@ from multiprocessing import Process
 from datetime import datetime
 from botocore.exceptions import ClientError
 import CustomLogHandler
+import yaml
 
 # Configure AWS credentials before continue
 # http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files
@@ -31,6 +32,7 @@ parser.add_argument('-t', '--tar', help='Compress the dump', action='store_true'
 parser.add_argument('-r', '--recovery', help='Start recovery process', action='store_true')
 parser.add_argument('-max', '--max_threads', default=60)
 parser.add_argument('-v', '--verbose', help='Print the name of the downloading files.', action='store_true')
+parser.add_argument('-n', '--page-size', help='The number of s3 items to list in one page', default=1000)
 parser.add_argument('-x', '--summaries-bucket', help='The name of the summaries bucket (to override for testing)', default='v3.0-summaries')
 parser.add_argument('-y', '--activities-bucket-base', help='The base name of the activities bucket (to override for testing)', default='v3.0-activities')
 
@@ -43,6 +45,7 @@ download_activities = args.activities
 recovery = args.recovery
 tar_dump = args.tar
 verbose  = args.verbose
+page_size = args.page_size
 summaries_bucket = args.summaries_bucket
 activities_bucket_base = args.activities_bucket_base
 MAX_THREADS = int(args.max_threads)
@@ -144,12 +147,12 @@ def process_summaries():
 		
 		# Create a PageIterator from the Paginator
 		page_iterator = None
-		if recovery:
-			f = open('summary_next_continuation_token.config', 'r')
-			continuation = f.readline()
-			page_iterator = paginator.paginate(Bucket=summaries_bucket, ContinuationToken=continuation, PaginationConfig={'PageSize': 1000})
+		continuation_config = read_continuation_config('summary')
+		if recovery and 'continuation_token' in continuation_config:
+			continuation_token = continuation_config['continuation_token']
+			page_iterator = paginator.paginate(Bucket=summaries_bucket, ContinuationToken=continuation_token, PaginationConfig={'PageSize': page_size})
 		else:
-			page_iterator = paginator.paginate(Bucket=summaries_bucket, PaginationConfig={'PageSize': 1000})		
+			page_iterator = paginator.paginate(Bucket=summaries_bucket, PaginationConfig={'PageSize': page_size})
 		
 		page_count = 1
 		for page in page_iterator:
@@ -166,64 +169,84 @@ def process_summaries():
 			try:
 				continuation_token = page['NextContinuationToken']
 			except:
-				logger.info('No more continuation tokens')			
-			file = open('summary_next_continuation_token.config','w') 
-			file.write(str(continuation_token))  
-			file.close()
+				logger.info('No more continuation tokens')
+			write_continuation_config('summary', summaries_bucket, continuation_token)
 		if tar_dump:
 			summaries_dump_name_xml = 'ORCID-API-3.0_xml_' + month + '_' + year + '.tar.gz'
 			compress(summaries_dump_name_xml, 'summaries')
+
+def read_continuation_config(file_name_prefix):
+	config_file_name = file_name_prefix + '_next_continuation_token.config'
+	if os.path.exists(config_file_name):
+		with open(config_file_name, 'r') as f:
+			loaded_data = yaml.safe_load(f)
+			return loaded_data
+	return {}
+
+def write_continuation_config(file_name_prefix, bucket_name, continuation_token):
+	data_to_save = { 'continuation_token': continuation_token, 'bucket_name': bucket_name}
+	with open(file_name_prefix + '_next_continuation_token.config', 'w') as f:
+		yaml.dump(data_to_save, f)
+
 
 #---------------------------------------------------------
 # Process activities
 #---------------------------------------------------------
 def process_activities():
-	suffixes = ['a', 'b', 'c']
-	for suffix in suffixes:
-		process_activities_bucket(suffix)
-	if tar_dump:
-		activities_dump_name_xml = 'ORCID-API-3.0_activities__xml_' + month + '_' + year + '.tar.gz'
-		compress(activities_dump_name_xml, 'activities')
+	if download_activities:
+		continuation_token = None
+		suffixes = ['a', 'b', 'c']
+		if recovery:
+			continuation_config = read_continuation_config('activities')
+			if 'continuation_token' in continuation_config:
+				continuation_token = continuation_config['continuation_token']
+				if continuation_token is not None:
+					bucket_name = continuation_config['bucket_name']
+					continuation_bucket_suffix = bucket_name[-1]
+					match_index = suffixes.index(continuation_bucket_suffix)
+					suffixes = suffixes[match_index:]
 
-def process_activities_bucket(activities_bucket_suffix):
+		for suffix in suffixes:
+			process_activities_bucket(suffix, continuation_token)
+		if tar_dump:
+			activities_dump_name_xml = 'ORCID-API-3.0_activities__xml_' + month + '_' + year + '.tar.gz'
+			compress(activities_dump_name_xml, 'activities')
+
+def process_activities_bucket(activities_bucket_suffix, continuation_token):
 	global path
 	global activities_bucket_base
 	global month
 	global year
 	global recovery
 	activities_bucket = activities_bucket_base + '-' + activities_bucket_suffix
-	if download_activities:
-		# Create the paginator
-		paginator = s3client.get_paginator('list_objects_v2')
-		# Create a PageIterator from the Paginator
-		page_iterator = None
-		if recovery:
-			f = open('activities_next_continuation_token.config', 'r')
-			continuation = f.readline()
-			page_iterator = paginator.paginate(Bucket=activities_bucket, ContinuationToken=continuation, PaginationConfig={'PageSize': 1000})
-		else:
-			page_iterator = paginator.paginate(Bucket=activities_bucket, PaginationConfig={'PageSize': 1000})
 
-		page_count = 1
-		for page in page_iterator:
-			logger.info('Activities page count: ' + str(page_count))
-			page_count += 1
-			elements = []
-			if 'Contents' in page:
-				for element in page['Contents']:
-					elements.append([activities_bucket,  element['Key']])
-				pool = Pool(processes=MAX_THREADS)
-				pool.map(download_activity, elements)
-				pool.close()
-				pool.join()
-				continuation_token = None
-				try:
-					continuation_token = page['NextContinuationToken']
-				except:
-					logger.info('No more continuation tokens')
-				file = open('activities_next_continuation_token.config', 'w')
-				file.write(str(continuation_token))
-				file.close()
+	# Create the paginator
+	paginator = s3client.get_paginator('list_objects_v2')
+	# Create a PageIterator from the Paginator
+	page_iterator = None
+	if recovery and continuation_token is not None:
+		page_iterator = paginator.paginate(Bucket=activities_bucket, ContinuationToken=continuation_token, PaginationConfig={'PageSize': page_size})
+	else:
+		page_iterator = paginator.paginate(Bucket=activities_bucket, PaginationConfig={'PageSize': page_size})
+
+	page_count = 1
+	for page in page_iterator:
+		logger.info('Activities page count: ' + str(page_count))
+		page_count += 1
+		elements = []
+		if 'Contents' in page:
+			for element in page['Contents']:
+				elements.append([activities_bucket,  element['Key']])
+			pool = Pool(processes=MAX_THREADS)
+			pool.map(download_activity, elements)
+			pool.close()
+			pool.join()
+			continuation_token = None
+			try:
+				continuation_token = page['NextContinuationToken']
+			except:
+				logger.info('No more continuation tokens')
+			write_continuation_config('activities', activities_bucket, continuation_token)
 
 
 #---------------------------------------------------------
