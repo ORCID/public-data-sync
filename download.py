@@ -200,10 +200,11 @@ def process_activities():
 			continuation_config = read_continuation_config('activities')
 			if 'continuation_token' in continuation_config:
 				continuation_token = continuation_config['continuation_token']
-				bucket_name = continuation_config['bucket_name']
-				continuation_bucket_suffix = bucket_name[-1]
-				match_index = suffixes.index(continuation_bucket_suffix)
-				suffixes = suffixes[match_index:]
+				if continuation_token is not None:
+					bucket_name = continuation_config['bucket_name']
+					continuation_bucket_suffix = bucket_name[-1]
+					match_index = suffixes.index(continuation_bucket_suffix)
+					suffixes = suffixes[match_index:]
 
 		for suffix in suffixes:
 			process_activities_bucket(suffix, continuation_token)
