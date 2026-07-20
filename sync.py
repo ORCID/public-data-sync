@@ -149,7 +149,7 @@ def process_activities(orcid_to_sync):
             for element in page['Contents']:
                 elements.append([activities_bucket, element['Key']])
         else:
-            logger.warn('Unable to find activities for %s', orcid_to_sync)
+            logger.warning('Unable to find activities for %s', orcid_to_sync)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             executor.map(sync_activities, elements)
