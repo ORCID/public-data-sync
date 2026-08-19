@@ -41,9 +41,9 @@ parser.add_argument('-d', '--days', help='Days to sync', type=integer_param_vali
 parser.add_argument('-l', '--log', help='Set the logging level, DEBUG by default', default='DEBUG')
 parser.add_argument('-max', '--max_threads', help='Maximum number of threads', type=integer_param_validator, default=10)
 parser.add_argument('-n', '--page-size', help='The number of s3 items to list in one page', default=1000)
-parser.add_argument('-x', '--summaries-bucket', help='The name of the summaries bucket (to override for testing)', default='v3.0-summaries')
-parser.add_argument('-y', '--activities-bucket-base', help='The base name of the activities bucket (to override for testing)', default='v3.0-activities')
-parser.add_argument('-z', '--lambda-bucket', help='The name of the bucket containing the lambda file (to override for testing', default='orcid-lambda-file')
+parser.add_argument('-x', '--summaries-bucket', help='The name of the summaries bucket (to override for testing)', default='v3.0-summaries-prod-use2')
+parser.add_argument('-y', '--activities-bucket-base', help='The base name of the activities bucket (to override for testing)', default='v3.0-activities-prod-use2')
+parser.add_argument('-z', '--lambda-bucket', help='The name of the bucket containing the lambda file (to override for testing', default='orcid-lambda-file-prod-use2')
 args = parser.parse_args()
 
 path = args.path if args.path.endswith('/') else (args.path + '/')

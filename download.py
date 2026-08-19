@@ -33,8 +33,8 @@ parser.add_argument('-r', '--recovery', help='Start recovery process', action='s
 parser.add_argument('-max', '--max_threads', default=60)
 parser.add_argument('-v', '--verbose', help='Print the name of the downloading files.', action='store_true')
 parser.add_argument('-n', '--page-size', help='The number of s3 items to list in one page', default=1000)
-parser.add_argument('-x', '--summaries-bucket', help='The name of the summaries bucket (to override for testing)', default='v3.0-summaries')
-parser.add_argument('-y', '--activities-bucket-base', help='The base name of the activities bucket (to override for testing)', default='v3.0-activities')
+parser.add_argument('-x', '--summaries-bucket', help='The name of the summaries bucket (to override for testing)', default='v3.0-summaries-prod-use2')
+parser.add_argument('-y', '--activities-bucket-base', help='The base name of the activities bucket (to override for testing)', default='v3.0-activities-prod-use2')
 
 args = parser.parse_args()
 
